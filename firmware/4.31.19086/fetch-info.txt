@@ -1,0 +1,6 @@
+version=4.31.19086
+hardware=kobo3
+url=https://cdn.kobo.com/downloads/firmwares/kobo3/Jan2022/kobo-update-4.31.19086.zip
+zip_bytes=95260246
+zip_sha256=69d869c4cfe24e56184dbb0fe9c16cccf0bb7141348a019f2f4304edb2448425
+fetched_utc=2026-09-06T23:12:32Z

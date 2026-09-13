@@ -1,0 +1,23 @@
+# Firmware binaries (re-fetchable via scripts/fetch-firmware.sh).
+firmware/*/*.zip
+firmware/*/KoboRoot.tgz
+firmware/*/upgrade/
+# Re-generatable checksums.
+manifest.md5sum
+# Phase 2+ build outputs.
+firmware/*/root/
+build/
+logs/
+artifacts/
+*.img
+*.sd
+result*
+# Probe outputs (keep probe/README.md).
+probe/**/*.png
+probe/**/*.bin
+probe/**/*.log
+!probe/README.md
+# Local/session state.
+.remember/
+.direnv/
+*.log

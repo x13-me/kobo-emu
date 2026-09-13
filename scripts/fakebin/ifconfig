@@ -1,0 +1,21 @@
+#!/bin/sh
+# fakebin/ifconfig — host-side stand-in for ifconfig(8). FAKE: canned output.
+#
+# Nickel runs `ifconfig eth0 up/down` during wifi bring-up and may query
+# `ifconfig eth0` for its inet addr. The guest interface state is owned by
+# the host kernel (qemu-user shares the host network stack), and the host
+# eth0 already has an address, so there is nothing to configure: always
+# report success (exit 0) with a plausible canned link report. (Real
+# `ifconfig up/down` is silent; always printing keeps one predictable path
+# and satisfies parsers that read the inet addr.)
+# Paired replay: shims/kobo-fb-shim.c replays these exact bytes in-process
+# when Nickel's scrubbed-PATH phase bypasses PATH lookup entirely.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-ifconfig: $*" >> "$FAKEBIN_LOG"
+fi
+cat <<'EOF'
+eth0      Link encap:Ethernet  HWaddr 00:1D:EC:AA:BB:CC
+          inet addr:192.168.1.100  Bcast:192.168.1.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+EOF
+exit 0

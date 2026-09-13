@@ -1,0 +1,10 @@
+#!/bin/sh
+# fakebin/wlarm_le — host-side stand-in for Broadcom's wlarm_le dongle tool.
+#
+# Nickel's dhd wifi bring-up calls wlarm_le during adapter init. There is no
+# guest radio, so report success (exit 0) and let Nickel's own link/IP
+# checks observe the live host interface.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-wlarm_le: $*" >> "$FAKEBIN_LOG"
+fi
+exit 0

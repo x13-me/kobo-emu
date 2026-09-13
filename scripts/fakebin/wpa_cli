@@ -1,0 +1,26 @@
+#!/bin/sh
+# fakebin/wpa_cli — host-side stand-in for wpa_cli(8). FAKE: canned output.
+#
+# Nickel runs `wpa_cli -i eth0 terminate` (expects "OK") and may query
+# `wpa_cli -i eth0 status` (expects key=value lines incl. wpa_state).
+# There is no guest radio, so always report success (exit 0) with minimal
+# plausible output. See wpa_supplicant.
+# Paired replay: shims/kobo-fb-shim.c replays these exact bytes in-process
+# when Nickel's scrubbed-PATH phase bypasses PATH lookup entirely.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-wpa_cli: $*" >> "$FAKEBIN_LOG"
+fi
+case " $* " in
+  *" status "*)
+    cat <<'EOF'
+bssid=02:0A:F7:11:22:33
+ssid=KoboEmu
+wpa_state=COMPLETED
+ip_address=192.168.1.100
+EOF
+    ;;
+  *)
+    echo "OK"
+    ;;
+esac
+exit 0

@@ -1,0 +1,21 @@
+#!/bin/sh
+# fakebin/cp — host-side cp(1) that tolerates Kobo's wpa_supplicant staging.
+#
+# Nickel's children execute on the HOST, so
+# `cp /etc/wpa_supplicant/wpa_supplicant.conf.template ...` resolves against
+# host /etc, where the template can never exist. Pretend that copy succeeded
+# (exit 0); delegate every other invocation to a real cp, and fail loudly
+# when none is available.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-cp: $*" >> "$FAKEBIN_LOG"
+fi
+case "$*" in
+  *wpa_supplicant*) exit 0 ;;
+esac
+for real_cp in /usr/bin/cp /bin/cp; do
+  if [ -x "$real_cp" ]; then
+    exec "$real_cp" "$@"
+  fi
+done
+echo "fake-cp: error: no real cp found for: $*" >&2
+exit 1

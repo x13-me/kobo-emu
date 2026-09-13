@@ -1,0 +1,13 @@
+#!/bin/sh
+# fakebin/dhcpcd — host-side stand-in for dhcpcd(8). FAKE: canned output.
+#
+# Nickel runs `dhcpcd -d -z eth0 &` (debug mode prints lease lines). The host
+# interface already holds a lease, so report success (exit 0) with one
+# plausible lease line. See wpa_supplicant.
+# Paired replay: shims/kobo-fb-shim.c replays these exact bytes in-process
+# when Nickel's scrubbed-PATH phase bypasses PATH lookup entirely.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-dhcpcd: $*" >> "$FAKEBIN_LOG"
+fi
+echo "eth0: leased 192.168.1.100 for 86400 seconds"
+exit 0

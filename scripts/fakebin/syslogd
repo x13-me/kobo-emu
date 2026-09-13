@@ -1,0 +1,9 @@
+#!/bin/sh
+# fakebin/syslogd — host-side stand-in for syslogd(8).
+#
+# Nickel starts `syslogd -C500 -S` at boot. Guest logging is already captured
+# to the artifacts guest log by the launcher; just report success (exit 0).
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-syslogd: $*" >> "$FAKEBIN_LOG"
+fi
+exit 0

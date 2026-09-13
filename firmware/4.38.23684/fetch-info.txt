@@ -1,0 +1,6 @@
+version=4.38.23684
+hardware=kobo3
+url=https://cdn.kobo.com/downloads/firmwares/kobo3/Apr2026/kobo-update-4.38.23684.zip
+zip_bytes=107569899
+zip_sha256=155d3f3b3ba649398eca4c7a5b695fc737294fa4481008e2d501edcba473ca34
+fetched_utc=2026-09-06T23:12:32Z

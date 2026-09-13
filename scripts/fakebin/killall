@@ -1,0 +1,10 @@
+#!/bin/sh
+# fakebin/killall — host-side stand-in for killall(8).
+#
+# Nickel's wifi bring-up/teardown runs `killall <daemon>`. The daemons never
+# run under emulation, so there is nothing to kill: report success (exit 0)
+# so the state machine advances instead of looping on 127s.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-killall: $*" >> "$FAKEBIN_LOG"
+fi
+exit 0

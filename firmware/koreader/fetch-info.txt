@@ -1,0 +1,25 @@
+KOReader Kobo bundle (first-pixels path: writes /dev/fb0 directly, no wifi gate)
+
+URL:     https://github.com/koreader/koreader/releases/download/v2022.01/koreader-kobo-v2022.01.zip
+Version: v2022.01 (2022-01-16; contemporary with the N905's max official firmware 4.31.19086, Jan 2022)
+File:    koreader-kobo-v2022.01.zip
+Bytes:   42326084
+SHA-256: eedd6f5d466faa57a533b240138cb71d05fbc96fb2ae0c32820de5d8a1c8392d
+Fetched: 2026-09-07 via curl -L (GitHub release CDN)
+
+Contents: single top-level koreader/ dir (1184 files, ~91 MiB unpacked):
+luajit (ARMhf), reader.lua, frontend/, libs/ (33 bundled .so), fonts/,
+data/, fbink, fbdepth, koreader.sh, nickel.sh, dropbear/scp/sftp-server.
+
+glibc verdict (guest rootfs is 2.11.1; readelf -V on every ELF in the
+bundle): fully satisfiable, NO older-tag hunt needed —
+- luajit + 8 bundled libs (libcrengine, libdjvulibre, libk2pdfopt,
+  libkoreader-nnsvg, liblept, libmupdf, libpng16, libtesseract) need
+  GLIBC_2.15 from libm.so.6, but only the __*_finite symbols (GCC
+  finite-math optimization) — all 24 are exported by Kobo's own
+  lib/libm-2.11.1.so (Kobo backported newer libm symbol versions into
+  their 2.11 tree; the file is dated 2017-07-31 in KoboRoot.tgz).
+- libglib-2.0 needs pthread_setname_np@GLIBC_2.12 — present in the
+  guest libpthread-2.11.1.so (same backport story).
+- All other NEEDED entries resolve to bundled libs/ or guest lib dirs;
+  INTERP /lib/ld-linux-armhf.so.3 exists in the guest.

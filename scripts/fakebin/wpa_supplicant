@@ -1,0 +1,10 @@
+#!/bin/sh
+# fakebin/wpa_supplicant — host-side stand-in for wpa_supplicant(8).
+#
+# Nickel runs `wpa_supplicant -D wext -s -i eth0 -B ...`. There is no guest
+# radio, and the host network is already up, so just report success (exit 0)
+# instead of 127 and let Nickel proceed to its own link/IP checks.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-wpa_supplicant: $*" >> "$FAKEBIN_LOG"
+fi
+exit 0

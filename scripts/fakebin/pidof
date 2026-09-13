@@ -1,0 +1,12 @@
+#!/bin/sh
+# fakebin/pidof — host-side stand-in for pidof(8).
+#
+# Nickel's wifi bring-up spawns `pidof X` as a child process. Under qemu-arm
+# those children execute on the HOST (qemu-user execve passthrough), where
+# the Kobo daemons can never be running. Answer "not running" (exit 1) so
+# Nickel's `pidof X && ...` guards take the not-running branch instead of
+# failing with 127 and retrying forever.
+if [ -n "${FAKEBIN_LOG:-}" ]; then
+  echo "fake-pidof: $*" >> "$FAKEBIN_LOG"
+fi
+exit 1
