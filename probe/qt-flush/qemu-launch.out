@@ -1,0 +1,3 @@
+kobo-emu dev shell ready
+QEMU emulator version 9.2.4
+gdb-probe: staged fb backing + empty touch/button FIFOs

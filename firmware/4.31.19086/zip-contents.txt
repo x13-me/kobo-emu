@@ -1,0 +1,15 @@
+Archive:  firmware/4.31.19086/kobo-update-4.31.19086.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+ 89986262  01-20-2022 16:56   KoboRoot.tgz
+      307  01-20-2022 16:56   manifest.md5sum
+        0  01-20-2022 16:56   upgrade/
+        0  01-20-2022 16:56   upgrade/freescale/
+   117196  01-20-2022 16:56   upgrade/freescale/u-boot.bin
+  1863144  01-20-2022 16:56   upgrade/freescale/uImage
+        0  01-20-2022 16:56   upgrade/mx50-ntx/
+  1907088  01-20-2022 16:56   upgrade/mx50-ntx/uImage-E60610
+   132504  01-20-2022 16:56   upgrade/mx50-ntx/u-boot.bin
+  1907088  01-20-2022 16:56   upgrade/mx50-ntx/uImage
+---------                     -------
+ 95913589                     10 files

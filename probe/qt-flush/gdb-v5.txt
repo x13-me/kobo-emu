@@ -1,0 +1,294 @@
+# Probe v4: solib-search-path fixes libkobo symbol loads; per-SEND_UPDATE host
+# shellout counts backing-file nonzero bytes; terminates cleanly at SU #6
+# with caller identity (info symbol $lr), all counters, one isExposed
+# infcall, and all-thread backtraces.
+set architecture arm
+set pagination off
+set confirm off
+set breakpoint pending on
+set print pretty off
+set unwindonsignal on
+file /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/nickel
+set sysroot /home/user/kobo-emu/build/rootfs-4.38.23684
+set solib-search-path /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/platforms:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/generic:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/sensors:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/imageformats:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/plugins:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Qt-5.2.1-arm/lib:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo:/home/user/kobo-emu/build/rootfs-4.38.23684/lib:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/lib
+target remote :1235
+handle SIGILL nostop noprint pass
+set $qbs = 0
+set $win = 0
+set $c_main = 0
+set $c_exec = 0
+set $c_beginpaint = 0
+set $c_resize = 0
+set $c_setdirty = 0
+set $c_blit = 0
+set $c_blitv2 = 0
+set $c_doredraw = 0
+set $c_really = 0
+set $c_dispflush = 0
+set $c_ionmap = 0
+set $c_qbsflush = 0
+set $c_su = 0
+set $c_configure = 0
+set $c_claim = 0
+set $c_initimg = 0
+
+break main
+commands
+silent
+set $c_main = $c_main + 1
+if $c_main <= 1
+printf "\n>>> HIT main\n"
+bt 3
+end
+continue
+end
+
+break _ZN16QCoreApplication4execEv
+commands
+silent
+set $c_exec = $c_exec + 1
+if $c_exec <= 1
+printf "\n>>> HIT QCoreApplication::exec\n"
+bt 3
+end
+continue
+end
+
+break _ZN13KoboScreenNXP9configureEv
+commands
+silent
+set $c_configure = $c_configure + 1
+if $c_configure <= 2
+printf "\n>>> HIT KoboScreenNXP::configure #%d\n", $c_configure
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP5claimERK10QByteArray
+commands
+silent
+set $c_claim = $c_claim + 1
+if $c_claim <= 2
+printf "\n>>> HIT KoboScreenNXP::claim #%d\n", $c_claim
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP21initializeScreenImageEv
+commands
+silent
+set $c_initimg = $c_initimg + 1
+if $c_initimg <= 2
+printf "\n>>> HIT KoboScreenNXP::initializeScreenImage #%d\n", $c_initimg
+bt 6
+end
+continue
+end
+
+break _ZN27KoboFrameBufferBackingStore10beginPaintERK7QRegion
+commands
+silent
+set $c_beginpaint = $c_beginpaint + 1
+if $c_beginpaint <= 5
+printf "\n>>> HIT KoboFrameBufferBackingStore::beginPaint #%d this=", $c_beginpaint
+p/x $r0
+bt 6
+end
+continue
+end
+
+break _ZN27KoboFrameBufferBackingStore6resizeERK5QSizeRK7QRegion
+commands
+silent
+set $c_resize = $c_resize + 1
+if $c_resize <= 5
+printf "\n>>> HIT KoboFrameBufferBackingStore::resize #%d size=", $c_resize
+x/2dw $r1
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP8setDirtyERK5QRectj
+commands
+silent
+set $c_setdirty = $c_setdirty + 1
+if $c_setdirty <= 8
+printf "\n>>> HIT KoboScreenNXP::setDirty #%d rect=", $c_setdirty
+x/4dw $r1
+printf "flags="
+p/x $r2
+bt 5
+end
+continue
+end
+
+break _ZN13KoboScreenNXP4blitERK7QRegion
+commands
+silent
+set $c_blit = $c_blit + 1
+if $c_blit <= 8
+printf "\n>>> HIT KoboScreenNXP::blit #%d\n", $c_blit
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP6blitV2ERK7QRegion
+commands
+silent
+set $c_blitv2 = $c_blitv2 + 1
+if $c_blitv2 <= 8
+printf "\n>>> HIT KoboScreenNXP::blitV2 #%d\n", $c_blitv2
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP8doRedrawEv
+commands
+silent
+set $c_doredraw = $c_doredraw + 1
+if $c_doredraw <= 5
+printf "\n>>> HIT KoboScreenNXP::doRedraw #%d\n", $c_doredraw
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP14reallyDoRedrawEv
+commands
+silent
+set $c_really = $c_really + 1
+if $c_really <= 5
+printf "\n>>> HIT KoboScreenNXP::reallyDoRedraw #%d\n", $c_really
+bt 6
+end
+continue
+end
+
+break _ZN4Disp5flushERK5QRectim
+commands
+silent
+set $c_dispflush = $c_dispflush + 1
+if $c_dispflush <= 8
+printf "\n>>> HIT Disp::flush #%d rect=", $c_dispflush
+x/4dw $r1
+printf "arg2="
+p/x $r2
+printf "arg3="
+p/x $r3
+bt 6
+end
+continue
+end
+
+break _ZN3Ion3mapEv
+commands
+silent
+set $c_ionmap = $c_ionmap + 1
+if $c_ionmap <= 3
+printf "\n>>> HIT Ion::map #%d\n", $c_ionmap
+bt 6
+end
+continue
+end
+
+break _ZN13QBackingStore5flushERK7QRegionP7QWindowRK6QPointRK5QListI5QPairI5QRectjEE
+commands
+silent
+set $qbs = $r0
+set $win = $r2
+set $c_qbsflush = $c_qbsflush + 1
+if $c_qbsflush <= 6
+printf "\n>>> HIT QBackingStore::flush #%d window=", $c_qbsflush
+p/x $r2
+bt 8
+end
+continue
+end
+
+# MXCFB_SEND_UPDATE trap: ioctl nr 0x2e, type 'F' (0x46).
+break ioctl if ((($r1 >> 8) & 255) == 70) && (($r1 & 255) == 46)
+commands
+silent
+set $c_su = $c_su + 1
+if $c_su <= 6
+printf "\n>>> HIT MXCFB_SEND_UPDATE ioctl #%d req=", $c_su
+p/x $r1
+printf "update_data="
+x/8xw $r2
+printf "ioctl-caller-lr="
+info symbol $lr
+bt 4
+shell python3 -c "d=open('/home/user/kobo-emu/build/rootfs-4.38.23684/tmp/kobo-fb0.bin','rb').read(); n=sum(1 for b in d if b); print('host-backing-nonzero-bytes=', n)"
+end
+if $c_su == 1
+if $qbs != 0
+printf "\n--- qimage probe at SU#1 (infcall) ---\n"
+set $qimg = (void *)_ZN13QBackingStore11paintDeviceEv($qbs)
+set $qiw = (int)_ZNK6QImage5widthEv($qimg)
+set $qih = (int)_ZNK6QImage6heightEv($qimg)
+set $qif = (int)_ZNK6QImage6formatEv($qimg)
+set $qibpl = (int)_ZNK6QImage12bytesPerLineEv($qimg)
+set $qibits = (void *)_ZNK6QImage9constBitsEv($qimg)
+printf "qimage="
+p $qimg
+printf "w/h/fmt/bpl/bits="
+p $qiw
+p $qih
+p $qif
+p $qibpl
+p $qibits
+printf "first-64-bytes-of-raster="
+x/16xw $qibits
+end
+end
+if $c_su == 2
+printf "\n=== 2 SEND_UPDATEs seen; exposed-state probe (infcall) ===\n"
+printf "window="
+p $win
+call (int)_ZNK7QWindow9isExposedEv($win)
+printf "\n=== final counters ===\n"
+p $c_main
+p $c_exec
+p $c_configure
+p $c_claim
+p $c_initimg
+p $c_beginpaint
+p $c_resize
+p $c_setdirty
+p $c_blit
+p $c_blitv2
+p $c_doredraw
+p $c_really
+p $c_dispflush
+p $c_ionmap
+p $c_qbsflush
+p $c_su
+printf "\n=== all-thread backtraces ===\n"
+thread apply all bt 10
+quit
+end
+continue
+end
+
+printf "\n=== planted, synchronous continue ===\n"
+continue
+printf "\n=== continue returned (target exited?) ===\n"
+p $c_main
+p $c_exec
+p $c_beginpaint
+p $c_resize
+p $c_setdirty
+p $c_blit
+p $c_blitv2
+p $c_doredraw
+p $c_really
+p $c_dispflush
+p $c_ionmap
+p $c_qbsflush
+p $c_su
+quit

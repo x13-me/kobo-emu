@@ -1,0 +1,15 @@
+Archive:  firmware/4.38.23684/kobo-update-4.38.23684.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+102322567  04-10-2026 20:32   KoboRoot.tgz
+      307  04-10-2026 20:32   manifest.md5sum
+        0  04-10-2026 20:32   upgrade/
+        0  04-10-2026 20:32   upgrade/freescale/
+   117196  04-10-2026 20:32   upgrade/freescale/u-boot.bin
+  1863144  04-10-2026 20:32   upgrade/freescale/uImage
+        0  04-10-2026 20:32   upgrade/mx50-ntx/
+  1907088  04-10-2026 20:32   upgrade/mx50-ntx/uImage-E60610
+   132504  04-10-2026 20:32   upgrade/mx50-ntx/u-boot.bin
+  1907088  04-10-2026 20:32   upgrade/mx50-ntx/uImage
+---------                     -------
+108249894                     10 files

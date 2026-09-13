@@ -488,8 +488,19 @@ Run the full matrix after every change; record rc + PNG sha where relevant.
    either (1) armed breakpoints with stop/bt/continue round-trips (massive
    timing dilation) or (2) strace -f syscall overhead — these two
    mechanisms are confounded in §2.4f and must be separated in §2.4i.** Next
-   probe (§2.4i): attach + arm sideload3 breakpoint set but never fire
-   (vs strace-only no gdb).
+    probe (§2.4i): attach + arm sideload3 breakpoint set but never fire
+    (vs strace-only no gdb).
 - After EVERY phase (and every sub-step that changes verdicts): update
-  README checklist/tables AND this HANDOVER.md (state tables, next
-  steps, validation results). A phase is not done until both are current.
+   README checklist/tables AND this HANDOVER.md (state tables, next
+   steps, validation results). A phase is not done until both are current.
+
+## 8. Push-prep milestone (2026-09-13)
+
+- **Git repo initialized** on branch `main`, initial commit `264253f` (28 files: docs, flake, scripts, shims, fetch-info).
+- **`.gitignore` hardened**: excludes probe outputs, `.remember/`, `*.log`.
+- **`nix flake show --all-systems` passes** for `x86_64-linux` + `aarch64-linux`.
+- **Remote NOT yet created.** User must run:
+  ```
+  gh repo create kobo-emu --public --source=. --push
+  ```
+  to create the GitHub repo and push the initial commit.

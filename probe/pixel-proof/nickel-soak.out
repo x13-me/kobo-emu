@@ -1,0 +1,18 @@
+run-usermode: applying loader fixups under build/rootfs-4.38.23684/
+run-usermode: fixups: relativized=0 sonames=0 compat=0
+run-usermode: building ARM shims
+run-usermode: staged fb backing + 6-event synthetic tap in build/rootfs-4.38.23684/tmp/
+run-usermode: OOBE bypass staged in build/rootfs-4.38.23684/mnt/onboard/.kobo/Kobo/
+run-usermode: pre-created Nickel databases + Adobe device.xml
+run-usermode: NickelMenu staged + hello-world menu entry
+run-usermode: staged full battery (mc13892_bat) + light/DVFS knobs
+run-usermode: wifi-env staged (fakebin/ + guest wpa_supplicant.conf)
+run-usermode: KOReader v2022.01 already staged
+run-usermode: launching mode=nickel timeout=240s log=artifacts/usermode-4.38.23684-nickel.log
+fb-dump: build/rootfs-4.38.23684/tmp/kobo-fb0.bin -> artifacts/fb-4.38.23684-nickel.png (800x600)
+run-usermode: done mode=nickel rc=124 (124 = still running at timeout)
+run-usermode: guest log : artifacts/usermode-4.38.23684-nickel.log
+run-usermode: helper log: /home/user/kobo-emu/artifacts/fakebin-4.38.23684-nickel.log
+run-usermode: shim log  : build/rootfs-4.38.23684/tmp/kobo-shim.log
+run-usermode: framebuffer: artifacts/fb-4.38.23684-nickel.png
+run-usermode: nickel survived startup (timeout, not a crash)

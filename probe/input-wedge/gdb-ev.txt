@@ -1,0 +1,184 @@
+# Probe v2, session 1: event logger. Plants pending breakpoints, runs async,
+# sleeps 150s INSIDE gdb, then DETACHES (guest keeps running for session 2)
+# and quits cleanly (output flushed).
+set architecture arm
+set pagination off
+set confirm off
+set breakpoint pending on
+set print pretty off
+file /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/nickel
+set sysroot /home/user/kobo-emu/build/rootfs-4.38.23684
+target remote :1234
+set $c_main = 0
+set $c_exec = 0
+set $c_beginpaint = 0
+set $c_resize = 0
+set $c_setdirty = 0
+set $c_blit = 0
+set $c_blitv2 = 0
+set $c_doredraw = 0
+set $c_really = 0
+set $c_dispflush = 0
+set $c_ionmap = 0
+set $c_qbsflush = 0
+
+break main
+commands
+silent
+set $c_main = $c_main + 1
+if $c_main <= 2
+printf "\n>>> HIT main #%d\n", $c_main
+bt 4
+end
+continue
+end
+
+break _ZN16QCoreApplication4execEv
+commands
+silent
+set $c_exec = $c_exec + 1
+if $c_exec <= 2
+printf "\n>>> HIT QCoreApplication::exec #%d\n", $c_exec
+bt 4
+end
+continue
+end
+
+break _ZN27KoboFrameBufferBackingStore10beginPaintERK7QRegion
+commands
+silent
+set $c_beginpaint = $c_beginpaint + 1
+if $c_beginpaint <= 5
+printf "\n>>> HIT KoboFrameBufferBackingStore::beginPaint #%d this=", $c_beginpaint
+p/x $r0
+bt 6
+end
+continue
+end
+
+break _ZN27KoboFrameBufferBackingStore6resizeERK5QSizeRK7QRegion
+commands
+silent
+set $c_resize = $c_resize + 1
+if $c_resize <= 5
+printf "\n>>> HIT KoboFrameBufferBackingStore::resize #%d size=", $c_resize
+x/2dw $r1
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP8setDirtyERK5QRectj
+commands
+silent
+set $c_setdirty = $c_setdirty + 1
+if $c_setdirty <= 8
+printf "\n>>> HIT KoboScreenNXP::setDirty #%d rect=", $c_setdirty
+x/4dw $r1
+printf "flags="
+p/x $r2
+bt 5
+end
+continue
+end
+
+break _ZN13KoboScreenNXP4blitERK7QRegion
+commands
+silent
+set $c_blit = $c_blit + 1
+if $c_blit <= 8
+printf "\n>>> HIT KoboScreenNXP::blit #%d\n", $c_blit
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP6blitV2ERK7QRegion
+commands
+silent
+set $c_blitv2 = $c_blitv2 + 1
+if $c_blitv2 <= 8
+printf "\n>>> HIT KoboScreenNXP::blitV2 #%d\n", $c_blitv2
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP8doRedrawEv
+commands
+silent
+set $c_doredraw = $c_doredraw + 1
+if $c_doredraw <= 5
+printf "\n>>> HIT KoboScreenNXP::doRedraw #%d\n", $c_doredraw
+bt 6
+end
+continue
+end
+
+break _ZN13KoboScreenNXP14reallyDoRedrawEv
+commands
+silent
+set $c_really = $c_really + 1
+if $c_really <= 5
+printf "\n>>> HIT KoboScreenNXP::reallyDoRedraw #%d\n", $c_really
+bt 6
+end
+continue
+end
+
+break _ZN4Disp5flushERK5QRectim
+commands
+silent
+set $c_dispflush = $c_dispflush + 1
+if $c_dispflush <= 8
+printf "\n>>> HIT Disp::flush #%d rect=", $c_dispflush
+x/4dw $r1
+printf "arg2="
+p/x $r2
+printf "arg3="
+p/x $r3
+bt 6
+end
+continue
+end
+
+break _ZN3Ion3mapEv
+commands
+silent
+set $c_ionmap = $c_ionmap + 1
+if $c_ionmap <= 3
+printf "\n>>> HIT Ion::map #%d\n", $c_ionmap
+bt 6
+end
+continue
+end
+
+break _ZN13QBackingStore5flushERK7QRegionP7QWindowRK6QPointRK5QListI5QPairI5QRectjEE
+commands
+silent
+set $c_qbsflush = $c_qbsflush + 1
+if $c_qbsflush <= 8
+printf "\n>>> HIT QBackingStore::flush #%d\n", $c_qbsflush
+bt 8
+end
+continue
+end
+
+printf "\n=== breakpoints planted, running 150s ===\n"
+continue &
+shell sleep 150
+printf "\n=== 150s window over; hit counters ===\n"
+p $c_main
+p $c_exec
+p $c_beginpaint
+p $c_resize
+p $c_setdirty
+p $c_blit
+p $c_blitv2
+p $c_doredraw
+p $c_really
+p $c_dispflush
+p $c_ionmap
+p $c_qbsflush
+detach
+quit

@@ -1,0 +1,15 @@
+# Probe v2, session 2: attach to the still-running guest, capture idle stacks.
+set architecture arm
+set pagination off
+set confirm off
+set print pretty off
+file /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/nickel
+set sysroot /home/user/kobo-emu/build/rootfs-4.38.23684
+target remote :1234
+printf "\n=== shared libraries ===\n"
+info sharedlibrary
+printf "\n=== threads ===\n"
+info threads
+printf "\n=== all-thread backtraces (paint-idle stacks) ===\n"
+thread apply all bt 12
+quit

@@ -1,0 +1,140 @@
+# Probe v7: STEP 1 one-shot proof — dump heap QImage bits at each SEND_UPDATE.
+# Dumps /tmp/opencode/qimage-su<N>.bin (raw RGB32 600x800) for offline
+# rotate+downconvert. Also captures QBackingStore::flush caller (STEP2
+# interposition viability) and SU rect geometry. Quits after SU#6.
+# Gdb method that works: qemu-arm -g + synchronous continue, SIGILL pass.
+set architecture arm
+set pagination off
+set confirm off
+set breakpoint pending on
+set print pretty off
+set unwindonsignal on
+file /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/nickel
+set sysroot /home/user/kobo-emu/build/rootfs-4.38.23684
+set solib-search-path /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/platforms:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Qt-5.2.1-arm/lib:/home/user/kobo-emu/build/rootfs-4.38.23684/lib:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/lib
+target remote :1237
+handle SIGILL nostop noprint pass
+set $qbs = 0
+set $c_orient = 0
+set $c_blit = 0
+set $c_blitv2 = 0
+set $c_qbsflush = 0
+set $c_su = 0
+
+break _ZN13KoboScreenNXP14setOrientationEi
+commands
+silent
+set $c_orient = $c_orient + 1
+if $c_orient == 1
+printf "\n>>> setOrientation #1 arg="
+p/d $r1
+end
+continue
+end
+
+break _ZN13KoboScreenNXP4blitERK7QRegion
+commands
+silent
+set $c_blit = $c_blit + 1
+continue
+end
+
+break _ZN13KoboScreenNXP6blitV2ERK7QRegion
+commands
+silent
+set $c_blitv2 = $c_blitv2 + 1
+continue
+end
+
+break _ZN13QBackingStore5flushERK7QRegionP7QWindowRK6QPointRK5QListI5QPairI5QRectjEE
+commands
+silent
+set $qbs = $r0
+set $c_qbsflush = $c_qbsflush + 1
+if $c_qbsflush == 1
+printf "\n>>> QBackingStore::flush #1 caller:\n"
+bt 8
+end
+continue
+end
+
+# MXCFB_SEND_UPDATE trap: ioctl nr 0x2e, type 'F' (0x46).
+break ioctl if ((($r1 >> 8) & 255) == 70) && (($r1 & 255) == 46)
+commands
+silent
+set $c_su = $c_su + 1
+printf "\n>>> HIT MXCFB_SEND_UPDATE ioctl #%d update_data=\n", $c_su
+x/8xw $r2
+if $qbs != 0
+set $qimg = (void *)_ZN13QBackingStore11paintDeviceEv($qbs)
+set $qiw = (int)_ZNK6QImage5widthEv($qimg)
+set $qih = (int)_ZNK6QImage6heightEv($qimg)
+set $qif = (int)_ZNK6QImage6formatEv($qimg)
+set $qibpl = (int)_ZNK6QImage12bytesPerLineEv($qimg)
+set $qibits = (void *)_ZNK6QImage9constBitsEv($qimg)
+printf "qimage w="
+p $qiw
+printf "h="
+p $qih
+printf "fmt="
+p $qif
+printf "bpl="
+p $qibpl
+printf "bits="
+p $qibits
+printf "spread-samples:"
+x/1xw $qibits
+x/1xw (char *)$qibits + 480000
+x/1xw (char *)$qibits + 960000
+x/1xw (char *)$qibits + 1440000
+x/1xw (char *)$qibits + 1919996
+end
+if $c_su == 1
+dump binary memory /tmp/opencode/qimage-su1.bin (char *)$qibits (char *)$qibits + $qibpl * $qih
+printf "dumped-su1\n"
+shell echo "host-dump-su1:"; ls -la /tmp/opencode/qimage-su1.bin
+end
+if $c_su == 2
+dump binary memory /tmp/opencode/qimage-su2.bin (char *)$qibits (char *)$qibits + $qibpl * $qih
+printf "dumped-su2\n"
+end
+if $c_su == 3
+dump binary memory /tmp/opencode/qimage-su3.bin (char *)$qibits (char *)$qibits + $qibpl * $qih
+printf "dumped-su3\n"
+end
+if $c_su == 4
+dump binary memory /tmp/opencode/qimage-su4.bin (char *)$qibits (char *)$qibits + $qibpl * $qih
+printf "dumped-su4\n"
+end
+if $c_su == 5
+dump binary memory /tmp/opencode/qimage-su5.bin (char *)$qibits (char *)$qibits + $qibpl * $qih
+printf "dumped-su5\n"
+end
+if $c_su == 6
+dump binary memory /tmp/opencode/qimage-su6.bin (char *)$qibits (char *)$qibits + $qibpl * $qih
+printf "dumped-su6\n"
+printf "\n=== 6 SEND_UPDATEs seen; final counters ===\n"
+printf "setOrientation="
+p $c_orient
+printf "blit="
+p $c_blit
+printf "blitV2="
+p $c_blitv2
+printf "qbsflush="
+p $c_qbsflush
+printf "su="
+p $c_su
+quit
+end
+continue
+end
+
+printf "\n=== planted, synchronous continue ===\n"
+continue
+printf "\n=== continue returned (target exited?) ===\n"
+p $c_orient
+p $c_blit
+p $c_blitv2
+p $c_qbsflush
+p $c_su
+quit

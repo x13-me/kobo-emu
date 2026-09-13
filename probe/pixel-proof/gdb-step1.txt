@@ -1,0 +1,78 @@
+# Step1 dump-only: trap 2nd SEND_UPDATE, dump QImage bits, quit.
+# Hang-safe: batch mode, pagination off, no shell cmds, no einkv() infcall
+# (v6 proved einkv() hangs the stub), self-terminating via quit at SU#2.
+set architecture arm
+set pagination off
+set confirm off
+set breakpoint pending on
+set print pretty off
+set unwindonsignal on
+file /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/nickel
+set sysroot /home/user/kobo-emu/build/rootfs-4.38.23684
+set solib-search-path /home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/platforms:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/generic:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/sensors:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/imageformats:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo/plugins:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Qt-5.2.1-arm/lib:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/local/Kobo:/home/user/kobo-emu/build/rootfs-4.38.23684/lib:/home/user/kobo-emu/build/rootfs-4.38.23684/usr/lib
+target remote :1247
+handle SIGILL nostop noprint pass
+set $qbs = 0
+set $c_qbsflush = 0
+set $c_su = 0
+
+break _ZN13QBackingStore5flushERK7QRegionP7QWindowRK6QPointRK5QListI5QPairI5QRectjEE
+commands
+silent
+set $qbs = $r0
+set $c_qbsflush = $c_qbsflush + 1
+continue
+end
+
+break ioctl if ((($r1 >> 8) & 255) == 70) && (($r1 & 255) == 46)
+commands
+silent
+set $c_su = $c_su + 1
+printf "\n>>> HIT SEND_UPDATE #%d update_data=\n", $c_su
+x/8xw $r2
+if $qbs != 0
+set $qimg = (void *)_ZN13QBackingStore11paintDeviceEv($qbs)
+set $qiw = (int)_ZNK6QImage5widthEv($qimg)
+set $qih = (int)_ZNK6QImage6heightEv($qimg)
+set $qif = (int)_ZNK6QImage6formatEv($qimg)
+set $qibpl = (int)_ZNK6QImage12bytesPerLineEv($qimg)
+set $qibits = (void *)_ZNK6QImage9constBitsEv($qimg)
+printf "qimage w="
+p $qiw
+printf "h="
+p $qih
+printf "fmt="
+p $qif
+printf "bpl="
+p $qibpl
+printf "bits="
+p $qibits
+printf "samples:"
+x/1xw $qibits
+x/1xw (char *)$qibits + 480000
+x/1xw (char *)$qibits + 960000
+x/1xw (char *)$qibits + 1440000
+end
+if $c_su == 2
+printf "\n--- dumping SU#2 bits ---\n"
+printf "dump-bytes="
+p $qibpl * $qih
+set $dump_start = (unsigned int)$qibits
+set $dump_len = $qibpl * $qih
+set $dump_end = $dump_start + $dump_len
+printf "dump-range="
+p/x $dump_start
+p/x $dump_end
+dump binary memory /tmp/kobo-step1/qimage-su2.bin $dump_start $dump_end
+printf "dumped-su2 qbsflush="
+p $c_qbsflush
+quit
+end
+continue
+end
+
+printf "\n=== planted, synchronous continue ===\n"
+continue
+printf "\n=== continue returned (target exited?) su=\n"
+p $c_su
+quit
