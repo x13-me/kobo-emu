@@ -82,9 +82,12 @@
               };
               # skip-macos-icon.patch is already contained in the fork
               # (patch detects as reversed); drop macOS-only patches.
-              patches = builtins.filter
+              # qemu-kobo-pll-lock.patch is our Track A fix: the i.MX50
+              # guest relocks PLLs with UPEN alone (no RST), so model LRF
+              # as establishing instantly on enable (see patches/).
+              patches = (builtins.filter
                 (p: baseNameOf (toString p) != "skip-macos-icon.patch")
-                old.patches;
+                old.patches) ++ [ ./patches/qemu-kobo-pll-lock.patch ./patches/qemu-kobo-i2c-fix.patch ./patches/qemu-kobo-ddr-type.patch ];
               # The fork is a git checkout: meson subprojects (keycodemapdb,
               # berkeley-{softfloat,testfloat}, libvfio-user, ...) are unvendored
               # .wrap files, and meson cannot fetch them inside the nix sandbox

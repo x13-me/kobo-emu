@@ -1,0 +1,31 @@
+--- a/hw/arm/imx50-kobotouch.c
++++ b/hw/arm/imx50-kobotouch.c
+@@ -199,3 +199,11 @@ static void kobotouch_init(MachineState *machine)
+     object_property_set_bool(OBJECT(&soc->epdc), "rotate-ccw", false,
+                              &error_fatal);
++    /*
++     * Strap mDDR (MX50_MDDR=0x100 in DataBahn DCTL bits [11:8]).  The
++     * shipped Trilogy kernel only accepts LPDDR2/mDDR at databahn+0;
++     * anything else makes init_ddr_settings() bail with "Unsupported
++     * memory type", leaving wait_in_iram NULL (idle memcpy Oops #2).
++     */
++    object_property_set_uint(OBJECT(soc), "ddr-type", 0x100,
++                             &error_fatal);
+     if (tms->mini) {
+         /* SD boot with controller 2 selected for U-Boot's environment. */
+         object_property_set_uint(OBJECT(soc), "src-sbmr", 0x00200040,
+--- a/hw/arm/fsl-imx50.c
++++ b/hw/arm/fsl-imx50.c
+@@ -481,6 +481,12 @@ static uint64_t imx50_databahn_read(void *opaque, hwaddr offset,
+     uint32_t value = s->databahn[offset / 4];
+
+     switch (offset) {
++    case 0:
++        /* Bits [11:8] report the strapped DRAM class.  Synthesize them
++           from ddr-type so a guest write to offset 0 cannot clobber the
++           type that init_ddr_settings() reads back (MX50_MDDR=0x100). */
++        return (value & ~IMX50_DATABAHN_DDR_TYPE_MASK) |
++               (s->ddr_type & IMX50_DATABAHN_DDR_TYPE_MASK);
+     case IMX50_DATABAHN_CTL42:
+         /* DRAM initialization and DLL relock complete immediately. */
+         return value | 0x10 | IMX50_DATABAHN_DLL_LOCKED;

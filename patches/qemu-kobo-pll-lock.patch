@@ -1,0 +1,26 @@
+--- a/hw/misc/imx50_ccm.c
++++ b/hw/misc/imx50_ccm.c
+@@ -63,18 +63,17 @@ static uint64_t imx50_pll_read(void *opaque, hwaddr offset, unsigned size)
+ static void imx50_pll_write(void *opaque, hwaddr offset, uint64_t value,
+                             unsigned size)
+ {
+     IMX50PLLRegion *r = opaque;
+-    uint32_t old = r->ccm->pll[r->index][offset / 4];
+ 
+     if (offset == PLL_DP_CTL) {
+         /*
+-         * LRF is read-only.  An enabled PLL retains an existing lock, and a
+-         * manual RST write starts it and establishes a new lock.
++         * LRF is read-only.  The i.MX50 PLL set-rate path relocks with
++         * UPEN alone (no RST), so an enable establishes the lock
++         * instantly instead of hanging the guest in its LRF poll loop.
+          */
+         value &= ~PLL_DP_CTL_LRF;
+-        if ((value & PLL_DP_CTL_UPEN) &&
+-            ((value & PLL_DP_CTL_RST) || (old & PLL_DP_CTL_LRF))) {
++        if (value & PLL_DP_CTL_UPEN) {
+             value |= PLL_DP_CTL_LRF;
+         }
+     }
+ 
+     /* DP_CONFIG.LDREQ clears when the new DPLL factors are accepted. */

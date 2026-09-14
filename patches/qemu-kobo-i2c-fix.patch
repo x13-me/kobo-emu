@@ -1,0 +1,33 @@
+--- a/hw/i2c/imx_i2c.c
++++ b/hw/i2c/imx_i2c.c
+@@ -237,19 +237,30 @@ static void imx_i2c_write(void *opaque, hwaddr offset,
+                                        extract32(s->i2dr_write, 0, 1))) {
+                     /* if non zero is returned, the address is not valid */
+                     s->i2sr |= I2SR_RXAK;
++                    /*
++                     * A NAK still terminates the address phase on real HW:
++                     * IIF is set and the IRQ fires, so the guest ISR runs
++                     * and reports the error instead of sleeping forever
++                     * waiting for an interrupt that never comes (which on
++                     * the Kobo Trilogy guest lets the idle thread run its
++                     * unmapped IRAM wait-copy and Oops in i2c_adap_imx_init).
++                     */
++                    imx_i2c_raise_interrupt(s);
+                 } else {
+                     s->address = s->i2dr_write;
+                     s->i2sr &= ~I2SR_RXAK;
+                     imx_i2c_raise_interrupt(s);
+                 }
+             } else { /* This is a normal data write */
+                 if (i2c_send(s->bus, s->i2dr_write)) {
+                     /* if the target return non zero then end the transfer */
+                     s->i2sr |= I2SR_RXAK;
+                     s->address = ADDR_RESET;
+                     i2c_end_transfer(s->bus);
++                    /* Same as above: a data-phase NAK must also raise IIF. */
++                    imx_i2c_raise_interrupt(s);
+                 } else {
+                     s->i2sr &= ~I2SR_RXAK;
+                     imx_i2c_raise_interrupt(s);
+                 }
+             }
